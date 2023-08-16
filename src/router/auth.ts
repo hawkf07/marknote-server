@@ -1,7 +1,10 @@
 import { Router } from "express";
+import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { db } from "../db";
 import { user } from "../db/schema";
+import { getUser } from "../utils";
+import { isMainThread } from "worker_threads";
 const router = Router();
 
 type userInput = {
@@ -15,22 +18,49 @@ router.get("/", (req, res) => {
 });
 // login
 
-router.post("/login", (req, res) => {
+router.post("/login", async (req, res) => {
   try {
+    const { username, password, email } = req.body as userInput;
+    const allUser = await getUser(req.body);
+    const user = allUser[0];
+    console.log(user);
+
+    if (!user) {
+      res
+        .send({
+          message: "user not found!",
+        })
+        .status(400);
+    }
+    const passwordIsMatch = await bcrypt.compare(password, user.password);
+    console.log(passwordIsMatch);
+    if (!passwordIsMatch) {
+      res.status(400).send({
+        message: "Password is not match!",
+      });
+    }
+    const token = jwt.sign(user, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.cookie("token", token).status(200).send({
+      message: "successfully login ",
+      userId: user.id,
+    });
   } catch (error) {
+    console.log(error);
     res.status(400).json({
       error: error,
     });
   }
 });
 //logout
-
-//register
-router.get("/get_user", async (req, res) => {
-  const allUsers = db.select().from(user);
-  console.log(allUsers)
-  return res.send({ users: allUsers });
+router.post("/logout", (req, res) => {
+  if (req.cookies("token")) {
+    res.clearCookie("token").send({ message: "logout!" });
+  }
 });
+//register
 router.post("/register", async (req, res) => {
   try {
     // get username,email and password from body
@@ -38,18 +68,20 @@ router.post("/register", async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await db.insert(user).values({
-      username,
-      email,
-      password: hashedPassword,
-    });
-    console.log(newUser);
+    const newUser = await db
+      .insert(user)
+      .values({
+        username,
+        email,
+        password: hashedPassword,
+      })
+      .returning();
     return res.status(200).json({
       message: "successfully created a new user",
-      
+      userId: newUser[0].id,
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(400).json({
       error,
       message: "error",
