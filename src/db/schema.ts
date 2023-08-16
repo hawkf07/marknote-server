@@ -10,9 +10,10 @@ import {
   text,
   varchar,
   foreignKey,
+  integer,
 } from "drizzle-orm/pg-core";
 
-export const users = pgTable("users", {
+export const user = pgTable("user", {
   username: varchar("name", { length: 256 }).notNull(),
   id: serial("id").notNull().primaryKey(),
   email: varchar("email", { length: 256 }).unique().notNull(),
@@ -20,7 +21,7 @@ export const users = pgTable("users", {
   date_created: date("date_created").defaultNow(),
 });
 
-export const usersRelations = relations(users, ({ many }) => {
+export const userRelations = relations(user, ({ many }) => {
   return {
     todos: many(todos),
     notes: many(notes),
@@ -35,12 +36,13 @@ export const todos = pgTable("todos", {
   date_created: date("date_created").defaultNow(),
   date_updated: date("date_updated").defaultNow(),
   completed: boolean("completed").default(false),
+  authorId:integer('author_id').notNull()
 });
 
 export const todosRelations = relations(todos, ({ one }) => ({
-  author: one(users, {
-    fields: [todos.id],
-    references: [users.id],
+  author: one(user, {
+    fields: [todos.authorId],
+    references: [user.id],
   }),
 }));
 
@@ -52,11 +54,12 @@ export const notes = pgTable("notes", {
   body: text("body"),
   date_created: date("date_created").defaultNow(),
   date_updated: date("date_updated").defaultNow(),
+  authorId:integer('author_id').notNull()
 });
 
 export const notesRelations = relations(notes, ({ one }) => ({
-  author: one(users, {
-    fields: [notes.id],
-    references: [users.id],
+  author: one(user, {
+    fields: [notes.authorId],
+    references: [user.id],
   }),
 }));
