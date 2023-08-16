@@ -22,7 +22,7 @@ app.use(express.json());
 app.use(cookierParser());
 
 app.use("/api/auth", authRouter);
-app.use("/api/auth", isAuthJWT, functionsRouter);
+app.use("/api/functions", isAuthJWT, functionsRouter);
 app.get("/", (req, res, next) => {
   res.send({ message: "root" });
 });
