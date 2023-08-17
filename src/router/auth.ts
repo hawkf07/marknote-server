@@ -24,7 +24,6 @@ router.post("/login", async (req, res) => {
     const allUser = await getUser(req.body);
     const user = allUser[0];
     console.log(user);
-
     if (!user) {
       res
         .send({
