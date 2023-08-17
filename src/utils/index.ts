@@ -25,7 +25,9 @@ export const isAuthJWT = async (
   res: Response,
   next: NextFunction
 ) => {
-  const token = req.cookies("token");
+  try {
+
+  const token = req.cookies.token
   if (!token) {
     res.send({ message: "error no token provided!" }).status(400);
   }
@@ -35,4 +37,9 @@ export const isAuthJWT = async (
   });
   req.user = user;
   next();
+  }
+  catch(error){
+    console.log("error",error)
+    res.send({message:"Error " + error}).status(400)
+  }
 };

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "../db";
 import { eq } from "drizzle-orm";
-import { user } from "../db/schema";
+import { notes, notesRelations, user, userRelations } from "../db/schema";
 
 const router = Router();
 
@@ -9,8 +9,8 @@ const router = Router();
 router.get("/get_notes", async (req, res) => {
   try {
     const currentUser = req.user;
-    console.log(currentUser)
-    const notes = await db.query.user.findMany({
+    console.log(currentUser);
+    const note = await db.query.user.findMany({
       where: eq(currentUser.id, user.id),
       with: {
         notes: true,
@@ -18,7 +18,7 @@ router.get("/get_notes", async (req, res) => {
     });
     res
       .send({
-        notes,
+        notes: note[0].notes,
       })
       .status(200);
   } catch (error) {
@@ -27,6 +27,20 @@ router.get("/get_notes", async (req, res) => {
 });
 // add new notes
 
+router.post("/add_notes", async (req, res) => {
+  try {
+    const { title, description, body } = req.body;
+    const newNote = await db.transaction(async (tx) => {});
+    return res
+      .send({
+        message: "created new notes",
+        newNote,
+      })
+      .status(200);
+  } catch (error) {
+    res.send({ message: "error" + error }).status(400);
+  }
+});
 // delete existing note
 
 // update note
@@ -35,4 +49,4 @@ router.get("/get_notes", async (req, res) => {
 todos functionalities (CRUD Operation)
 */
 
-export default router
+export default router;

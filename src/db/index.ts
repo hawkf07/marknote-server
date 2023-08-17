@@ -16,4 +16,4 @@ client
   .catch((error) => {
     console.log("error", error);
   });
-export const db = drizzle(client, { schema });
+export const db = drizzle(client, { schema,logger:true });
