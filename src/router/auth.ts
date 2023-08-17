@@ -42,11 +42,16 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign(user, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
-
-    res.cookie("token", token).status(200).send({
-      message: "successfully login ",
-      userId: user.id,
-    });
+    return res
+      .cookie("token", token, {
+        //secure: true,
+        //httpOnly:true,
+      })
+      .status(200)
+      .send({
+        message: "successfully login ",
+        userId: user.id,
+      });
   } catch (error) {
     console.log(error);
     res.status(400).json({
