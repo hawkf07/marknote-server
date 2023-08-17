@@ -5,6 +5,7 @@ import * as schema from "../db/schema";
 import { Request } from "express";
 import { Response } from "express";
 import { NextFunction } from "express";
+import { RequestWithUser } from "../types";
 type userInput = {
   username: string;
   email?: string;
@@ -21,25 +22,31 @@ export const getUser = async (userInput: userInput) => {
 };
 
 export const isAuthJWT = async (
-  req: Request,
+  req: Request & { user: string | jwt.JwtPayload },
+
   res: Response,
   next: NextFunction
 ) => {
+  const token = req.cookies.token;
+
   try {
-
-  const token = req.cookies.token
-  if (!token) {
-    res.send({ message: "error no token provided!" }).status(400);
-  }
-
-  const user = jwt.verify(token, process.env.JWT_SECRET, {
-    maxAge: "7d",
-  });
-  req.user = user;
-  next();
-  }
-  catch(error){
-    console.log("error",error)
-    res.send({message:"Error " + error}).status(400)
+    if (!token) {
+      res.send({ message: "error no token provided!" }).status(400);
+    }
+    console.log(token);
+    const user = jwt.verify(token, process.env.JWT_SECRET, {
+      maxAge: "7d",
+    });
+    console.log(user);
+    req.user = user;
+    console.log(token);
+    next();
+  } catch (error) {
+    if (error) {
+      res
+        .status(400)
+        .clearCookie("s")
+        .send("error" + error);
+    }
   }
 };

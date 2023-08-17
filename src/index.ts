@@ -5,13 +5,14 @@ import authRouter from "./router/auth";
 import functionsRouter from "./router/functions";
 import cors from "cors";
 import { isAuthJWT } from "./utils";
-
+import bearerToken from "express-bearer-token";
 const app = express();
 app.use(
   express.urlencoded({
     extended: true,
   })
 );
+
 app.use(
   cors({
     origin: true,
@@ -22,7 +23,11 @@ app.use(express.json());
 app.use(cookierParser());
 
 app.use("/api/auth", authRouter);
-app.use("/api/functions", isAuthJWT, functionsRouter);
+app.use(
+  "/api/functions",
+ isAuthJWT ,
+  functionsRouter
+);
 app.get("/", (req, res, next) => {
   res.send({ message: "root" });
 });
