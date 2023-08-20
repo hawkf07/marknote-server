@@ -1,6 +1,7 @@
 import { Request } from "express";
 
 import jwt, { JwtPayload } from "jsonwebtoken";
+import { user } from "../db/schema";
 export interface RequestWithUser extends Request {
   user:
     | {
@@ -14,5 +15,5 @@ export interface RequestWithUser extends Request {
 }
 
 export interface RequestWithToken extends Request {
-  token: string ;
+  token: string  | JwtPayload 
 }

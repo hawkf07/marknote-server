@@ -37,3 +37,13 @@ export const isAuthJWT = async (
     res.status(401).send("Forbidden");
   }
 };
+
+export const getAllNotes = async (currentUser: schema.user) => {
+  const notes = await db.query.user.findMany({
+    with: {
+      notes: true,
+    },
+    where: eq(schema.user.id, currentUser.id),
+  });
+  return notes;
+};

@@ -1,4 +1,5 @@
-import { relations } from "drizzle-orm";
+import { InferModel, relations } from "drizzle-orm";
+import z from 'zod'
 import {
   PgSerial,
   PgText,
@@ -63,3 +64,7 @@ export const notesRelations = relations(notes, ({ one }) => ({
     references: [user.id],
   }),
 }));
+
+export type user =InferModel<typeof user> 
+export type notes = InferModel<typeof notes>
+export type todos = InferModel<typeof todos>

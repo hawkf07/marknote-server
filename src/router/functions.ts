@@ -10,19 +10,26 @@ import {
   user,
   userRelations,
 } from "../db/schema";
+import * as schema from "../db/schema";
 import { RequestWithToken, RequestWithUser } from "../types";
-
-type reqJwtPayload = { token: string | jwt.JwtPayload };
 const router = Router();
-
 // get notes
 router.get("/get_notes", async (req: RequestWithToken, res) => {
-  jwt.verify(req.token, "testsecret", (err, data) => {
-    if (err) {
-      res.send({ err }).status(401);
-    }
-    res.send(data);
-  });
+  try {
+    const user = jwt.verify(req.token as string, "testsecret") as user;
+    const allNotes = await db.query.user.findFirst({
+      where: eq(schema.user.id, user.id),
+      with: {
+        notes: true,
+      },
+    });
+    res.send({
+      userId: user.id,
+      notes: allNotes.notes,
+    });
+  } catch (err) {
+    res.send({ message: "error ", err }).status(400);
+  }
 });
 // add new notes
 router.post("/add_notes", async (req: RequestWithUser, res) => {
