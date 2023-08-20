@@ -7,7 +7,7 @@ import { Response } from "express";
 import { NextFunction } from "express";
 import { RequestWithUser } from "../types";
 type userInput = {
-  username: string;
+  name: string;
   email?: string;
   password: string;
 };
@@ -16,37 +16,24 @@ export const getUser = async (userInput: userInput) => {
   const theUser = await db
     .select()
     .from(schema.user)
-    .where(eq(schema.user.username, userInput.username));
+    .where(eq(schema.user.username, userInput.name));
 
   return theUser;
 };
 
 export const isAuthJWT = async (
-  req: Request & { user: string | jwt.JwtPayload },
-
+  req: Request & { token: string | jwt.JwtPayload },
   res: Response,
   next: NextFunction
 ) => {
-  const token = req.cookies.token;
+  const bearerHeader = req.headers["authorization"];
+  if (typeof bearerHeader !== "undefined") {
+    const token = bearerHeader.split(" ")[1];
 
-  try {
-    if (!token) {
-      res.send({ message: "error no token provided!" }).status(400);
-    }
-    console.log(token);
-    const user = jwt.verify(token, process.env.JWT_SECRET, {
-      maxAge: "7d",
-    });
-    console.log(user);
-    req.user = user;
-    console.log(token);
+    req.token = token;
+    console.log(req.token);
     next();
-  } catch (error) {
-    if (error) {
-      res
-        .status(400)
-        .clearCookie("s")
-        .send("error" + error);
-    }
+  } else {
+    res.status(401).send("Forbidden");
   }
 };

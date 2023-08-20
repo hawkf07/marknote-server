@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { db } from "../db";
+import querystring from "querystring";
 import { eq } from "drizzle-orm";
+import jwt from "jsonwebtoken";
 import {
   notes,
   notesRelations,
@@ -8,24 +10,19 @@ import {
   user,
   userRelations,
 } from "../db/schema";
-import { RequestWithUser } from "../types";
+import { RequestWithToken, RequestWithUser } from "../types";
 
+type reqJwtPayload = { token: string | jwt.JwtPayload };
 const router = Router();
 
 // get notes
-router.get("/get_notes", async (req: RequestWithUser, res) => {
-  try {
-    const userData = await db.query.user.findMany({
-      with: {
-        notes: true,
-      },
-      where: eq(req.user.id, user.id),
-    });
-    res.status(200).send({ message: "successfuly get notes", userData });
-  } catch (error) {
-    console.log(req.user, req.cookies);
-    res.send({ message: "Error" + error }).status(400);
-  }
+router.get("/get_notes", async (req: RequestWithToken, res) => {
+  jwt.verify(req.token, "testsecret", (err, data) => {
+    if (err) {
+      res.send({ err }).status(401);
+    }
+    res.send(data);
+  });
 });
 // add new notes
 router.post("/add_notes", async (req: RequestWithUser, res) => {

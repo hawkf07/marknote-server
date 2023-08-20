@@ -1,6 +1,6 @@
 import { Request } from "express";
 
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 export interface RequestWithUser extends Request {
   user:
     | {
@@ -11,4 +11,8 @@ export interface RequestWithUser extends Request {
         date_created: string;
       }
     | jwt.JwtPayload;
+}
+
+export interface RequestWithToken extends Request {
+  token: string ;
 }
